@@ -3,17 +3,17 @@ import productsRouter from './routes/products.router.js'
 import cartRouter from './routes/cart.routers.js'
 
 const app = express();
-const PORT = 8000;
+const PORT = 8080;
 
 //? Middlewares
 app.use(express.json());//!Recibe las peticiones POST-
 app.use(express.urlencoded({ extended: true }));//!Recibe datos de las peticiones post
 
 //? Ruta Products
-app.use('./products', productsRouter);
+app.use('/api/products', productsRouter);
 
 //?Ruta cart
-app.use('./cart', cartRouter);
+app.use('/api/cart', cartRouter);
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
 

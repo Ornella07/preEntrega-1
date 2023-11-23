@@ -33,8 +33,8 @@ loadProducts();
 router.get('/', async(req, res) => {
     try{
         const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
-        const products = await productManager.getProducts(limit);//!el metodo getProduct de productManager para obtener todos los productos, considerando el limite si se proporciona uno.
-        console.log('Productos obtenidos: ', products);
+        const products = await productManager.getProducts(limit);//! El metodo getProduct de productManager para obtener todos los productos, considerando el limite si se proporciona uno.
+        res.status(200).json({ products })
     }catch(error){
         console.error('Error al procesar la solicitud', error);
         res.status(500).json({error: 'Error interno del servidor'});
@@ -60,7 +60,7 @@ router.get('/:pid', async(req, res)=> {
 });
 
 //* Agregamos un nuevo producto
-router.post('/', async(req, res) => {
+router.post('/api/products', async(req, res) => {
     try {
         const{
             title,
@@ -84,6 +84,7 @@ router.post('/', async(req, res) => {
             res.status(400).json({ error: `Ya existe un producto con el codigo ${code}`})
             return;
         }
+        await productManager.addProduct(title, description, price, thumbnails, code, stock, category, status);
         //? Se agrega el nuevo producto al array products
         const newProduct = {
             title,

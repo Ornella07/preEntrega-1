@@ -7,7 +7,7 @@ const jsonFilePath = './carts.json';
 const cartManager = new CartManager(jsonFilePath);
 
 //! Creamos un nuevo carrito.
-router.post('/', async (req, res) => {
+router.get('/', async (req, res) => {
     try{
         const newCart = await cartManager.createCart();
         console.log(`Nuevo carrito creado, ${newCart}`);

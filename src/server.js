@@ -3,7 +3,7 @@ import productsRouter from './routes/products.router.js'
 import cartRouter from './routes/cart.routers.js'
 
 const app = express();
-const PORT = 8080;
+const PORT = 8000;
 
 //? Middlewares
 app.use(express.json());//!Recibe las peticiones POST-

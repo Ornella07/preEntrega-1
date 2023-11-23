@@ -17,12 +17,26 @@ export default class ProductManager {
             fs.writeFileSync(this.fileName, JSON.stringify(this.products), 'utf-8');
         }
     }
+    async init() {
+        await this.loadProducts();
+      }
+    
+     async loadProducts() {
+        try {
+            // Utilizamos try-catch para manejar errores al leer el archivo
+            const data = await fs.readFile(this.fileName, 'utf-8');
+            this.products = JSON.parse(data);
+        } catch (error) {
+            // Si hay un error, inicializamos products como un array vacío
+            this.products = [];
+        }
+      }
 
     async saveFile() {
         await fs.writeFile(this.fileName, JSON.stringify(this.products, null, 2), 'utf-8');
     };
 
-    async addPorduct(title, description, price, thumbnail, code, stock) {
+    async addProduct(title, description, price, thumbnail, code, stock) {
         const newProduct = {
             id: ++this.id, //! Incrementamos el último ID y asignamos al nuevo producto
             title,
@@ -56,21 +70,21 @@ export default class ProductManager {
         if (prodSelect) {
             const newProdArr = this.products.filter((p) => p.id != id);
             this.products = newProdArr;
-            await this.saveFile();
+            await this.saveProducts();
         } else {
             console.log("Error al eliminar el producto con id");
         }
     }
     //aca se recibe el id
     async updateProductById({ id, ...newValuesForProduct }) {
-        const productsForUpdate = this.products.findIndex((p) => p.id === id);
-        if (productsForUpdate !== -1) {
-            this.products[productsForUpdate] = {
-                ...this.products[productsForUpdate],
-                newValuesForProduct,
+        const productIndex = this.products.findIndex((p) => p.id === id);
+        if (productIndex !== -1) {
+            this.products[productIndex] = {
+                ...this.products[productIndex],
+                ...newValuesForProduct,  // Usar spread para aplicar las nuevas propiedades
             };
             await this.saveFile();
-            return this.products[productsForUpdate];
+            return this.products[productIndex];
         } else {
             console.error(`Producto con id: ${id} no encontrado`);
         }

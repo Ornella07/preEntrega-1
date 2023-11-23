@@ -1,6 +1,6 @@
 import express from 'express';
 import CartManager from  '../cartmanager.js'
-import ProductManager from '../ProductManager';
+import ProductManager from '../ProductManager.js';
 
 const router = express.Router();
 const jsonFilePath = './carts.json';

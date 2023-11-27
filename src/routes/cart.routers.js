@@ -1,10 +1,11 @@
 import express from 'express';
-import CartManager from  '../cartmanager.js'
+import CartManager from  '../CartManager.js'
 import ProductManager from '../ProductManager.js';
 
 const router = express.Router();
 const filePath = './carts.json';
 const cartManager = new CartManager(filePath);
+await cartManager.init();
 
 //! Creamos un nuevo carrito.
 router.get('/', async (req, res) => {
@@ -20,22 +21,23 @@ router.get('/', async (req, res) => {
 });
 
 //! Obtenemos productos en un carrito por ID
-router.get('/:cid', async(req, res)=>{
-    try{
-        const cartId = parseInt(req.params.cid)
+router.get('/:cid', async(req, res) => {
+    try { 
+        const cartId = parseInt(req.params.cid);
         const cart = await cartManager.getCartById(cartId);
 
-        //? Verificamos si el carrito existe
-        if (!cart){
-            res.status(404).json({error: 'No existe el carrito'});
+        // Verifica si el carrito existe
+        if (!cart) {
+            res.status(404).json({ error: 'Carrito no encontrado.' });
             return;
-        }
-        console.log('Productos en el carrito: ', cart.products);
-        res.json({products: cart.products})
-    }catch(error){
+        };
+
+        console.log('Productos en el carrito:', cart.products);
+        res.json({ products: cart.products });
+    } catch (error) {
         console.error('Error al procesar la solicitud:', error);
-        res.status(500).json({error: 'Error interno del servidor'});
-    }
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    };
 });
 
 //! Agregamos producto al carrito por ID en la ruta /cart/:cid/product/:pid

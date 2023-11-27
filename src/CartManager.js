@@ -1,24 +1,30 @@
-import fs from 'fs/promises';
+
+// import fs from 'fs/promises';
+import fs from "fs";
+
 
 class CartManager {
     constructor(jsonFilePath){
         this.jsonFilePath = jsonFilePath;
-        this.cart = [];
+        this.carts = [];
         this.lastCartId = '0';
-    }
 
-    async init(){
-        try {
-            const data = await fs.readFile(this.jsonFilePath,'utf-8');
-            this.cart = JSON.parse(data);
-            this.lastCartId = this.cart.reduce((maxId, cart) => Math.max(maxId, cart.id),0)
-        }catch(error){
-            await this.saveData();
+        if(fs.existsSync(jsonFilePath)){
+            try {
+                let carts = fs.readFileSync(jsonFilePath, 'utf-8');
+                this.carts = JSON.parse(carts)
+                this.lastCartId = this.carts.reduce((maxId, cart) => Math.max(maxId, cart.id),0)
+            } catch (error) {
+                this.carts = []
+            }
+        }else{
+            this.carts = [];
+            fs.writeFile(this.jsonFilePath, JSON.stringify(this.carts),'utf-8')
         }
+
     }
-    
     //* Este metodo guarda los datos de los carritos en el archivo JSON. 
-    async saveData(){
+    async saveProducts(){
         await fs.writeFile(this.jsonFilePath, JSON.stringify(this.cart, null, 2), 'utf-8');
         //? Utilizamos el JSON.stringifly para convertir el array cart en formatos JSON --
     }
@@ -30,7 +36,7 @@ class CartManager {
             products: [],
         };
         this.cart.push(newCart);
-        await this.saveData()
+        await this.saveProducts()
         return newCart;
     }
 

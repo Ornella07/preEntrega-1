@@ -31,13 +31,12 @@ export default class ProductManager {
             this.products = [];
         }
       }
-
     async saveProducts() {
         await fs.writeFile(this.fileName, JSON.stringify(this.products, null, 2), 'utf-8');
     };
 
-    async addProduct(title, description, price, thumbnail, code, stock) {
-        const newProduct = {
+    async addProduct({title, description, price, thumbnail, code, stock, status}) {
+            const newProduct = {
             id: ++this.id,
             title,
             description,
@@ -45,9 +44,14 @@ export default class ProductManager {
             thumbnail: thumbnail, // Ajustamos el nombre del parámetro para que coincida con el objeto nuevo
             code,
             stock,
-            category,
+           
             status,
-        };
+        } 
+        //? verificamos todos los campos obligatorios estan presentes
+        if(!title || !description || !code || !price || !stock ){
+            res.status(400).json({ error: 'Todos los campos son obligatorios'})
+            return;
+        }
         //? Verificamos si ya existe un producto con el mismo codigo.
         if (this.products.some(product => product.code === code)) {
             console.error(`El producto con el código ${code} ya existe`);
@@ -55,6 +59,8 @@ export default class ProductManager {
         }
         this.products.push(newProduct);
         await this.saveProducts();
+        //! Retornamos un status y el nuevo producto generado para que lo tengamos de respuesta en la ruta
+        return{status: true, products: newProduct}
         
     };
 
@@ -67,6 +73,7 @@ export default class ProductManager {
         return this.products.find(product => product.id === productId);
     }
 
+    
 
     async deleteProduct(id) {
         const prodSelect = this.products.find((p) => p.id == id);
@@ -93,4 +100,6 @@ export default class ProductManager {
             console.error(`Producto con id: ${id} no encontrado`);
         }
     }
+    //* Leer los productos desde el archivo JSON y asignar a la variable 'products'
+    
 }

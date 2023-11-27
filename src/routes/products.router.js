@@ -3,30 +3,11 @@ import fs from 'fs/promises'
 import ProductManager from '../ProductManager.js';
 
 const router = express.Router();
-const filePath = './src/productos.json'
-const productManager = new ProductManager(filePath);
+const jsonFilePath = './src/productos.json'
+const productManager = new ProductManager(jsonFilePath);
 // await ProductManager.init();
 let products = [];//Variable para almacenar los productos
 
-//* Leer los productos desde el archivo JSON y asignar a la variable 'products'
-async function loadProducts(){
-    try {
-        const data = await fs.readFile(filePath, 'utf-8');
-        products = JSON.parse(data);
-    } catch (error) {
-        console.error('Error al cargar los productos: ', error);
-    }
-}
-//* Guardamos los productos en el archivo JSON
-async function saveProducts(){
-    try {
-        const data = JSON.stringify(products, null, 2);
-        await fs.writeFile(filePath, data, 'utf-8')
-    } catch (error) {
-        console.error('Error al guardar los productos:', error);
-    }
-}
-loadProducts();
 
 
 //* Obetenemos todos los productos
@@ -41,7 +22,8 @@ router.get('/', async(req, res) => {
     }
 });
 
-// * Obtenemos un producto por ID
+// * Obtenemos un producto por ID 
+//! ESTE ENDPOINT FUNCIONA
 router.get('/:pid', async (req, res) => {
     try {
         const productId = parseInt(req.params.pid); //! obtiene el id del producto de los parametros de la URL
@@ -60,52 +42,15 @@ router.get('/:pid', async (req, res) => {
     }
 });
 //* Agregamos un nuevo producto
-router.post('/:pid', async(req, res) => {
+router.post('/', async (req, res) =>{
     try {
-        const{
-            title,
-            description,
-            code,
-            price,
-            stock,
-            category,
-            thumbnails,
-            status = true,  // status es true por defecto
-        } = req.body;//req.body obtiene los datos del producto del cuerpo de la solicitud
-
-        //?Verificamos si todos los campos obligatorios estan presente
-         if(!title || !description || !code || !price || !stock || !category){
-            res.status(400).json({ error: 'Todos los campos son obligatorios'})
-            return;
-        }
-
-        // //?Verificamos si ya existe un producto con el mismo codigo.
-        if(this.products.some(product => product.code === code)){
-            res.status(400).json({ error: `Ya existe un producto con el codigo ${code}`})
-            return;
-        }
-        await productManager.addProduct(title, description, price, thumbnails, code, stock, category, status);
-        // //? Se agrega el nuevo producto al array products
-        const newProduct = {
-            title,
-            description,
-            code,
-            price,
-            stock,
-            category,
-            thumbnails,
-            status,
-        };
-        products.push(newProduct);
-
-        //? guardamos los cambios en el archivo JSON
-        await saveProducts();
-        console.log('Nuevo producto agregado correctamente.');
-        res.json({message: 'Nuevo producto agregado correctamente'});
+        const response = await productManager.addProduct(req.body);
+        res.json({message: 'Nuevo producto agregado', data: response})
     } catch (error) {
-        console.error('Error al procesar la solicitud:', error);
-        res.status(500).json({error: 'Error interno del servidor'})    
+        console.error('Error al procesar la solicitud', error);
+        res.status(500).json({error:'Error en el server'})
     }
+})
     // Actualizar un producto por ID // ENDPOINT FUNCIONANDO
 router.put('/:pid', async(req, res) => {
     try { 
@@ -118,18 +63,6 @@ router.put('/:pid', async(req, res) => {
             return;
         };
 
-        // Extrae los campos que se van a actualizar del cuerpo de la solicitud
-        const { title, description, code, price, stock, category, thumbnails, status } = req.body;
-
-        // Actualiza los campos del producto
-        existeProducto.title = title || existeProducto.title;
-        existeProducto.description = description || existeProducto.description;
-        existeProducto.code = code || existeProducto.code;
-        existeProducto.price = price || existeProducto.price;
-        existeProducto.stock = stock || existeProducto.stock;
-        existeProducto.category = category || existeProducto.category;
-        existeProducto.thumbnails = thumbnails || existeProducto.thumbnails;
-        existeProducto.status = status !== undefined ? status : existeProducto.status;
 
         // Guarda los cambios
         await productManager.saveProducts();
@@ -165,6 +98,6 @@ router.put('/:pid', async(req, res) => {
         }
     })
 
-})  
+
 
 export default router;

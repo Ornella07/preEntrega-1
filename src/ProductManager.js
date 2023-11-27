@@ -32,19 +32,21 @@ export default class ProductManager {
         }
       }
 
-    async saveFile() {
+    async saveProducts() {
         await fs.writeFile(this.fileName, JSON.stringify(this.products, null, 2), 'utf-8');
     };
 
     async addProduct(title, description, price, thumbnail, code, stock) {
         const newProduct = {
-            id: ++this.id, //! Incrementamos el último ID y asignamos al nuevo producto
+            id: ++this.id,
             title,
             description,
             price,
-            thumbnail,
+            thumbnail: thumbnail, // Ajustamos el nombre del parámetro para que coincida con el objeto nuevo
             code,
             stock,
+            category,
+            status,
         };
         //? Verificamos si ya existe un producto con el mismo codigo.
         if (this.products.some(product => product.code === code)) {
@@ -52,7 +54,8 @@ export default class ProductManager {
             return;
         }
         this.products.push(newProduct);
-        await this.saveFile();
+        await this.saveProducts();
+        
     };
 
     async getProducts(limit) {
@@ -81,9 +84,10 @@ export default class ProductManager {
         if (productIndex !== -1) {
             this.products[productIndex] = {
                 ...this.products[productIndex],
-                ...newValuesForProduct,  // Usar spread para aplicar las nuevas propiedades
+                ...newValuesForProduct,
+                status: status !== undefined ? status : this.products[productIndex].status, // Manejar la propiedad status
             };
-            await this.saveFile();
+            await this.saveProducts();
             return this.products[productIndex];
         } else {
             console.error(`Producto con id: ${id} no encontrado`);

@@ -3,8 +3,8 @@ import CartManager from  '../cartmanager.js'
 import ProductManager from '../ProductManager.js';
 
 const router = express.Router();
-const jsonFilePath = './carts.json';
-const cartManager = new CartManager(jsonFilePath);
+const filePath = './carts.json';
+const cartManager = new CartManager(filePath);
 
 //! Creamos un nuevo carrito.
 router.get('/', async (req, res) => {
@@ -66,7 +66,7 @@ router.post('/:cid/product/:pid', async(req, res)=> {
         //* Verificamos si el producto esta en el carrito
         const existeProducto = cart.product.findIndex(item => item.product.id === productId);
 
-        if(existeProducto !== -1){
+        if(existeProducto !== undefined){
             //? Si el producto ya esta en el carrito, incremento la cantidad
             cart.product[existeProducto].quantity += quantity;
         }else{
@@ -75,7 +75,7 @@ router.post('/:cid/product/:pid', async(req, res)=> {
         }
         
         //* Guardamos los cambios
-        await cartManager.saveData();
+        await cartManager.saveProducts();
         console.log(`El producto con id ${productId}, fue agregado al carrito con id ${cartId}.`);
         res.json({message: `El producto con id ${productId}, fue agregado al carrito con id ${cartId}.`})
     }catch(error){

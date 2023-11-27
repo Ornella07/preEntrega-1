@@ -1,5 +1,4 @@
 
-// import fs from 'fs/promises';
 import fs from "fs";
 
 
@@ -19,13 +18,21 @@ class CartManager {
             }
         }else{
             this.carts = [];
-            fs.writeFile(this.jsonFilePath, JSON.stringify(this.carts),'utf-8')
+            fs.writeFile(this.jsonFilePath, JSON.stringify(this.carts),'utf-8', (error) => {
+                if(error){
+                    return {error:'Error al generar archivo, en el cosntructor de la clase'}
+                }
+            })
         }
 
     }
     //* Este metodo guarda los datos de los carritos en el archivo JSON. 
     async saveProducts(){
-        await fs.writeFile(this.jsonFilePath, JSON.stringify(this.cart, null, 2), 'utf-8');
+        await fs.writeFile(this.jsonFilePath, JSON.stringify(this.carts, null, 2), 'utf-8' , (error) => {
+            if(error){
+                return {error:'Error al guardar el archivo'}
+            }
+        });
         //? Utilizamos el JSON.stringifly para convertir el array cart en formatos JSON --
     }
 
@@ -35,7 +42,7 @@ class CartManager {
             id: ++this.lastCartId,
             products: [],
         };
-        this.cart.push(newCart);
+        this.carts.push(newCart);
         await this.saveProducts()
         return newCart;
     }
@@ -49,7 +56,36 @@ class CartManager {
     //* Obtenemos el carrito por su ID. utilizamos getCartIndexById para obtener el indice y devuelve el carrito si se encuentra o null si no se encuentra
     async getCartById(cartId){
         const cartIndex = this.getCartIndexById(cartId);
-        return cartIndex !== -1 ? this.cart[cartIndex] : null;
+        return cartIndex !== -1 ? this.carts[cartIndex] : null;
+    }
+
+    async addProductsToCart(idCart, idProduct, quantity){
+        try {
+            const cart = await this.getCartById(idCart)
+            const cartIndex = await this.getCartIndexById(idCart)
+            const existPorduct = await ProductManager.getProductById(idProduct);
+            
+
+            if(!cart ){
+                return {error: 'Carrito no encontrado'}
+            }
+            if(!existPorduct){
+                return {error: 'Producto no encontrado'}
+            }
+            const quantityToAdd = quantity || 1;  
+
+            if(cart.products.some((product ) =>  product.id === idProduct)){
+                const productToAdd = cart.products.find((product) =>product.id === idProduct )
+                productToAdd.quantity += quantityToAdd; 
+            }else{
+                this.carts[cartIndex].products.push({id: idProduct, 'quantity': quantityToAdd })
+            }
+            await this.saveProducts()
+            return { cart }
+    
+        } catch (error) {
+            if(error) {return { error}}
+        }
     }
 }
 

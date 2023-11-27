@@ -1,16 +1,16 @@
 import express from 'express';
 import CartManager from  '../CartManager.js'
 import ProductManager from '../ProductManager.js';
-
-const productManager = new ProductManager('./src/Productos.json');
+const productManager = new ProductManager('./src/productos.json');
 const router = express.Router();
-const jsonFilePath = './carts.json';
+
+const jsonFilePath = './src/carts.json';
+const jsonFilePathProducts = './src/productos.json' 
+
 const cartManager = new CartManager(jsonFilePath);
 
-
-
 //! Creamos un nuevo carrito.
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
     try{
         const newCart = await cartManager.createCart();
         console.log(`Nuevo carrito creado, ${newCart}`);
@@ -48,39 +48,12 @@ router.post('/:cid/product/:pid', async(req, res)=> {
         //? parseInt(req.params.cid) & parseInt(req.params.pid) para obtener los ID del carrito y del producto de los parametros de la url
         const cartId = parseInt(req.params.cid);
         const productId = parseInt(req.params.pid);
-        const quantity = req.body.quantity || 1;  // Por defecto, agregar 1 unidad
-        //* Obtenemos el carrito
-        const cart = await cartManager.getCartById(cartId);
 
-        //* Verificamos si el carrito Existe
-        if(!cart){
-            res.status(404).json({error: 'El carrito no existe'});
-            return;
-        }
-
-        //* Obetenemos el producto
-        const product = await productManager.getProductById(productId);
-
-        //* Verificamos si el producto existe
-        if(!product){
-            res.status(404).json({error:'El producto no se encontro'})
-            return;
-        }
-        //* Verificamos si el producto esta en el carrito
-        const existeProducto = cart.products.findIndex(item => item.product.id === productId);
-        // const quantity = req.body.quantity;
-
-        if(existeProducto !== undefined){
-            //? Si el producto ya esta en el carrito, incremento la cantidad
-            cart.product[existeProducto].quantity += quantity;
-        }else{
-            //? Si el producto no esta en el cart, lo agregamos con la cantidad elegida
-            cart.product.push({product, quantity});
-        }
-        
-        //* Guardamos los cambios
-        await cartManager.saveProducts();
-
+        const cart =await cartManager.addProductsToCart(cartId, productId)
+      
+if(cart.error) {
+    return res.json(cart.error)
+}
         console.log(`El producto con id ${productId}, fue agregado al carrito con id ${cartId}.`);
         res.json({message: `El producto con id ${productId}, fue agregado al carrito con id ${cartId}.`})
     }catch(error){

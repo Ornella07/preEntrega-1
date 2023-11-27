@@ -32,10 +32,14 @@ export default class ProductManager {
         }
       }
     async saveProducts() {
-        await fs.writeFile(this.fileName, JSON.stringify(this.products, null, 2), 'utf-8');
+        await fs.writeFile(this.fileName, JSON.stringify(this.products, null, 2), 'utf-8', (error) => {
+          if(error){
+            return {error: "Hubo un error al guardar el archivo"}
+          }
+        });
     };
 
-    async addProduct({title, description, price, thumbnail, code, stock, status}) {
+    async addProduct({title, description, price, thumbnail, code, stock,category, status}) {
             const newProduct = {
             id: ++this.id,
             title,
@@ -44,7 +48,7 @@ export default class ProductManager {
             thumbnail: thumbnail, // Ajustamos el nombre del parámetro para que coincida con el objeto nuevo
             code,
             stock,
-           
+            category,
             status,
         } 
         //? verificamos todos los campos obligatorios estan presentes
@@ -73,8 +77,6 @@ export default class ProductManager {
         return this.products.find(product => product.id === productId);
     }
 
-    
-
     async deleteProduct(id) {
         const prodSelect = this.products.find((p) => p.id == id);
         if (prodSelect) {
@@ -92,7 +94,7 @@ export default class ProductManager {
             this.products[productIndex] = {
                 ...this.products[productIndex],
                 ...newValuesForProduct,
-                status: status !== undefined ? status : this.products[productIndex].status, // Manejar la propiedad status
+                
             };
             await this.saveProducts();
             return this.products[productIndex];
